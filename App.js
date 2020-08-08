@@ -21,11 +21,22 @@ import { AppLoading } from 'expo';
 //FONTS
 const customFonts = {
   'Metal-Gear-Solid-2': require('./assets/fonts/Metal-Gear-Solid-2.ttf'),
+  Gameplay: require('./assets/fonts/Gameplay.ttf'),
 };
 
 //SOUNDS
+const music = new Audio.Sound();
 const activeSound = new Audio.Sound();
 const gameoverSound = new Audio.Sound();
+
+const startMusic = async () => {
+  await music.loadAsync(require('./assets/sounds/background.mp3'));
+  await music.playAsync();
+  await music.setVolumeAsync(0.25);
+  await music.setIsLoopingAsync(true);
+};
+startMusic();
+
 const loadActiveSound = async () => {
   const sound = await activeSound.loadAsync(
     require('./assets/sounds/torture.mp3')
@@ -127,6 +138,7 @@ const App = () => {
   // START GAME
   const start = async () => {
     if (gameOver) {
+      music.playAsync();
       setHealth(100);
     }
     setLevel(level + 1);
@@ -167,7 +179,6 @@ const App = () => {
       // Don't forget to unload the sound from memory
       // when you are done using the Sound object
       await activeSound.stopAsync();
-      console.log('yup');
     } catch (error) {
       // An error occurred!
     }
@@ -217,6 +228,10 @@ const App = () => {
         return sound;
       };
       stopSound();
+      const pauseMusic = async () => {
+        await music.pauseAsync();
+      };
+      pauseMusic();
       const playSound = async () => {
         const sound = await gameoverSound.playAsync();
         return sound;
@@ -261,8 +276,10 @@ const App = () => {
     },
     scoreText: {
       color: 'white',
-      fontSize: 18,
+      fontSize: 12,
       flex: 1,
+      fontFamily: 'Gameplay',
+      marginBottom: 6,
     },
     highscoreText: {
       color: 'white',
@@ -376,6 +393,7 @@ const App = () => {
           await Font.loadAsync(customFonts);
         }}
         onFinish={() => setGameLoaded(true)}
+        autoHideSplash="false"
       />
     );
   }
