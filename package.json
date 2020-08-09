@@ -8,14 +8,22 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "assert": "^2.0.0",
+    "crypto": "^1.0.1",
     "expo": "~38.0.8",
+    "expo-av": "~8.2.1",
     "expo-status-bar": "^1.0.2",
+    "node.js": "0.0.1-security",
+    "path": "^0.12.7",
+    "pg": "^8.3.0",
     "react": "~16.11.0",
     "react-dom": "~16.11.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-dialog-input": "^1.0.8",
     "react-native-web": "~0.11.7",
-    "watchman": "^1.0.0",
-    "expo-av": "~8.2.1"
+    "sequelize": "^6.3.4",
+    "url": "^0.11.0",
+    "watchman": "^1.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",

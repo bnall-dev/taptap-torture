@@ -9,19 +9,24 @@ import {
   Dimensions,
   StyleSheet,
   TouchableHighlight,
+  AsyncStorage,
 } from 'react-native';
-import active from './assets/start.gif';
+import active from './assets/active.gif';
 import idle from './assets/idle.gif';
 import recover from './assets/recover.gif';
 import gameover from './assets/over.gif';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
-import { AppLoading } from 'expo';
+import DialogInput from 'react-native-dialog-input';
+
+import { AppLoading, SplashScreen } from 'expo';
 
 //FONTS
 const customFonts = {
   'Metal-Gear-Solid-2': require('./assets/fonts/Metal-Gear-Solid-2.ttf'),
   Gameplay: require('./assets/fonts/Gameplay.ttf'),
+  MetalGear: require('./assets/fonts/MetalGear.ttf'),
+  'Tactical-Espionage-Action': require('./assets/fonts/Tactical-Espionage-Action.ttf'),
 };
 
 //SOUNDS
@@ -54,11 +59,11 @@ const loadGameoverSound = async () => {
 loadGameoverSound();
 
 const App = () => {
+  const [gameView, setGameView] = useState('mainMenu');
   const [health, setHealth] = useState(100);
   const [time, setTime] = useState(100);
   const [score, setScore] = useState(0);
-  const [highscore, setHighScore] = useState(0);
-  const [gameStart, setGameStart] = useState(false);
+  const [gameActive, setGameActive] = useState(false);
   const [gameRecover, setGameRecover] = useState(false);
   const [gameReset, setGameReset] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -66,6 +71,10 @@ const App = () => {
   const [reps, setReps] = useState(0);
   const [level, setLevel] = useState(0);
   const [gameLoaded, setGameLoaded] = useState(false);
+  const [gameMenuActive, setGameMenuActive] = useState(false);
+  const [highScores, setHighScores] = useState([]);
+  const [nicknamePromptVisible, setNicknamePromptVisible] = useState(false);
+  const [nickname, setNickname] = useState('');
 
   //GET SCREEN DIMENSIONS
   const win = Dimensions.get('window');
@@ -90,16 +99,39 @@ const App = () => {
     }, [delay]);
   }
 
+  const STORAGE_KEY = '@highScores';
+  const getHighScores = async () => {
+    const scores = await AsyncStorage.getItem(STORAGE_KEY);
+
+    if (scores !== null) {
+      setHighScores(JSON.parse(scores));
+    }
+  };
+
+  const saveHighScores = async (item) => {
+    try {
+      var jsonOfItem = await AsyncStorage.setItem(STORAGE_KEY, item);
+
+      setHighScores(JSON.parse(item));
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  useEffect(() => {
+    getHighScores();
+  }, []);
+
   // LOWER HEALTH DURING ACTIVE STATE
   useInterval(() => {
-    if (gameStart) {
+    if (gameActive) {
       setHealth(health - 5);
     }
   }, 500);
 
   // LOWER TIME DURING ACTIVE STATE
   useInterval(() => {
-    if (gameStart) {
+    if (gameActive) {
       setTime(time - 1);
     }
   }, 100);
@@ -146,7 +178,7 @@ const App = () => {
     setGameReset(false);
 
     setTime(100);
-    setGameStart(true);
+    setGameActive(true);
 
     try {
       await activeSound.playAsync();
@@ -167,14 +199,29 @@ const App = () => {
 
   //RESET GAME
   const reset = async () => {
-    if (score > highscore) {
-      setHighScore(score);
+    // await AsyncStorage.removeItem(STORAGE_KEY);
+    const scoreObject = { score, level, user: nickname };
+    if (highScores === [] || highScores.find((sc) => sc.score < score)) {
+      setNicknamePromptVisible(true);
     }
-    setLevel(0);
-    setScore(0);
-    setGameStart(false);
-    setGameOver(false);
-    setGameReset(true);
+    if (!nicknamePromptVisible) {
+      const array = [...highScores, scoreObject];
+      array.sort((a, b) => {
+        return a.score - b.score;
+      });
+      array.reverse();
+      if (array.length > 10) {
+        array.pop();
+      }
+      saveHighScores(JSON.stringify(array));
+
+      setLevel(0);
+      setScore(0);
+      setGameActive(false);
+      setGameOver(false);
+      setGameReset(true);
+    }
+
     try {
       // Don't forget to unload the sound from memory
       // when you are done using the Sound object
@@ -186,7 +233,7 @@ const App = () => {
 
   // INCREASE HEALTH ON KEYPRESS
   const resist = () => {
-    if (gameStart) {
+    if (gameActive && health < 100) {
       setScore(score + (100 - health) * 10);
       setHealth(health + 1);
     }
@@ -197,14 +244,14 @@ const App = () => {
     if (gameReset) {
       setViewImg(idle);
     }
-  }, [gameStart, gameRecover, gameReset, gameOver]);
+  }, [gameActive, gameRecover, gameReset, gameOver]);
 
   // ACTIVE STATE EFFECTS
   useEffect(() => {
-    if (gameStart) {
+    if (gameActive) {
       setViewImg(active);
     }
-  }, [gameStart, gameRecover, gameReset, gameOver]);
+  }, [gameActive, gameRecover, gameReset, gameOver]);
 
   // RECOVER STATE EFFECTS
   useEffect(() => {
@@ -216,7 +263,7 @@ const App = () => {
       };
       stopSound();
     }
-  }, [gameStart, gameRecover, gameReset, gameOver]);
+  }, [gameActive, gameRecover, gameReset, gameOver]);
 
   //GAMEOVER STATE EFFECTS
   useEffect(() => {
@@ -238,14 +285,14 @@ const App = () => {
       };
       playSound();
     }
-  }, [gameStart, gameRecover, gameReset, gameOver]);
+  }, [gameActive, gameRecover, gameReset, gameOver]);
 
   // IDLE STATE EFFECTS
   useEffect(() => {
-    if (!gameStart && !gameOver && !gameRecover && !gameReset) {
+    if (!gameActive && !gameOver && !gameRecover && !gameReset) {
       setViewImg(idle);
     }
-  }, [gameStart, gameOver, gameReset, gameRecover]);
+  }, [gameActive, gameOver, gameReset, gameRecover]);
 
   // HANDLE RESET AND SUBMIT
   useEffect(() => {
@@ -257,11 +304,11 @@ const App = () => {
       setReps(0);
     }
     if ((health > 0) & (time < 1)) {
-      setGameStart(false);
+      setGameActive(false);
       setGameRecover(true);
     }
     if ((health < 1) & (time > 0)) {
-      setGameStart(false);
+      setGameActive(false);
       setGameReset(false);
       setHealth(0);
       setScore(0);
@@ -269,15 +316,22 @@ const App = () => {
     }
   }, [health, time]);
 
+  const submitHighScore = async (scores) => {
+    await AsyncStorage.setItem('@MySuperStore:key');
+  };
+
   const styles = StyleSheet.create({
     app: {
-      backgroundColor: 'grey',
+      backgroundColor: 'rgb(50,50,50)',
       flex: 1,
+    },
+
+    scoreDiv: {
+      flexDirection: 'row',
     },
     scoreText: {
       color: 'white',
       fontSize: 12,
-      flex: 1,
       fontFamily: 'Gameplay',
       marginBottom: 6,
     },
@@ -321,15 +375,12 @@ const App = () => {
       backgroundColor: 'rgb(20,20,200)',
     },
     imgDiv: {
-      backgroundColor: 'rgb(50,50,50)',
+      backgroundColor: 'black',
       padding: 8,
       alignItems: 'center',
     },
     viewImg: { height: 176, borderWidth: 5, borderColor: 'black' },
-    scoreDiv: {
-      display: 'flex',
-      flexDirection: 'row',
-    },
+
     buttonsDiv: {
       margin: 16,
       borderWidth: 5,
@@ -337,27 +388,27 @@ const App = () => {
     },
     startButton: {
       height: 150,
-      backgroundColor: 'darkred',
+      backgroundColor: 'rgb(125,0,0)',
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 5,
-      borderColor: 'rgb(255,100,100)',
+      borderColor: 'rgba(0,0,0,0.3)',
     },
     resistButton: {
       height: 150,
-      backgroundColor: 'red',
+      backgroundColor: 'rgb(175, 0,0)',
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 5,
-      borderColor: 'rgb(255,100,100)',
+      borderColor: 'rgba(0,0,0,0.3)',
     },
     submitButton: {
       height: 60,
-      backgroundColor: 'blue',
+      backgroundColor: 'rgb(0,0,175)',
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 5,
-      borderColor: 'rgb(150,150,255)',
+      borderColor: 'rgba(0,0,0,0.3)',
     },
     startButtonDiv: {
       display: 'flex',
@@ -374,14 +425,96 @@ const App = () => {
       margin: 0,
       fontFamily: 'Metal-Gear-Solid-2',
       fontSize: 48,
-      color: 'rgba(50,50,50,0.5)',
+      color: 'rgba(0,0,0,0.3)',
       lineHeight: 170,
     },
     submitButtonText: {
       fontFamily: 'Metal-Gear-Solid-2',
       fontSize: 36,
-      color: 'rgba(50,50,50,0.5)',
+      color: 'rgba(0,0,0,0.3)',
       lineHeight: 75,
+    },
+    menuLogo: {
+      height: win.width,
+      width: win.width,
+    },
+    gameMenuDiv: {
+      position: 'absolute',
+      backgroundColor: 'rgba(0,0,0,0.9)',
+      zIndex: 2,
+      padding: 16,
+      height: win.height * 0.8,
+      width: win.width * 0.8,
+      margin: win.width * 0.1,
+    },
+    gameMenuButton: {
+      margin: 4,
+      padding: 8,
+      borderWidth: 1,
+      borderColor: 'rgb(125,0,0)',
+    },
+    gameMenuText: {
+      fontFamily: 'Tactical-Espionage-Action',
+      color: 'rgb(175,0,0)',
+      fontSize: 18,
+      textAlign: 'center',
+    },
+    mainMenuView: {
+      alignItems: 'center',
+      flex: 1,
+      backgroundColor: 'black',
+    },
+    logoTextDiv: {
+      backgroundColor: 'black',
+      borderBottomWidth: 10,
+      borderBottomColor: 'rgb(175, 0,0)',
+      borderTopWidth: 5,
+      borderTopColor: 'rgb(175, 0,0)',
+      width: win.width,
+      shadowColor: 'rgb(200,200,225)',
+      shadowOffset: { width: 0, height: -40 },
+      shadowOpacity: 0.3,
+      shadowRadius: 30,
+    },
+    logoText: {
+      textAlign: 'center',
+      color: 'rgb(175, 0,0)',
+      fontSize: 48,
+      fontFamily: 'MetalGear',
+      margin: 8,
+    },
+    mainMenuButtonsDiv: {
+      margin: 4,
+      backgroundColor: 'black',
+      width: win.width,
+    },
+    mainMenuButton: {
+      borderWidth: 1,
+      borderColor: 'rgb(125,0,0)',
+      margin: 2,
+      padding: 6,
+    },
+    mainMenuButtonText: {
+      fontFamily: 'Tactical-Espionage-Action',
+      color: 'rgb(175,0,0)',
+      textAlign: 'center',
+    },
+    gameHeader: {
+      flexDirection: 'row',
+    },
+    leaderboardView: {
+      alignItems: 'center',
+      flex: 1,
+      padding: 16,
+    },
+    highScoresListItem: {
+      flexDirection: 'row',
+      margin: 8,
+    },
+    highScoresListText: {
+      fontFamily: 'Gameplay',
+      flex: 1,
+      textAlign: 'center',
     },
   });
 
@@ -398,60 +531,176 @@ const App = () => {
     );
   }
 
+  const startNewGame = () => {
+    setGameView('game');
+  };
+  const openMainMenu = () => {
+    toggleGameMenu();
+    setScore(0);
+    setLevel(0);
+    setTime(100);
+    setHealth(100);
+    setGameView('mainMenu');
+  };
+
+  const toggleGameMenu = () => {
+    if (gameView === 'game' && !gameMenuActive) {
+      setGameMenuActive(true);
+    } else {
+      setGameMenuActive(false);
+    }
+  };
+
+  const highScoresList = highScores.map((score, i) => {
+    return (
+      <View key={i} style={styles.highScoresListItem}>
+        <Text style={styles.highScoresListText}>#{i + 1}</Text>
+        <Text style={styles.highScoresListText}>{score.user}</Text>
+        <Text style={styles.highScoresListText}>{score.score}</Text>
+        <Text style={styles.highScoresListText}>{score.level}</Text>
+      </View>
+    );
+  });
+  const openLeaderboards = () => {
+    setGameView('leaderboards');
+  };
+
   return (
     <View style={styles.app}>
       <StatusBar hidden />
-      <View style={styles.barsDiv}>
-        <Text style={styles.highscoreText}>HIGH SCORE: {highscore}</Text>
-        <View style={styles.barDiv}>
-          <View style={styles.healthbarBox}>
-            <View style={styles.healthbar} />
-          </View>
-          <Text style={styles.barText}>LIFE</Text>
-        </View>
-        <View>
-          <View style={styles.timebarBox}>
-            <View style={styles.timeBar} />
-          </View>
-          <Text style={styles.barText}>TIME</Text>
-        </View>
-      </View>
+      {gameView === 'mainMenu' && (
+        <View style={styles.mainMenuView}>
+          <Image
+            source={require('./assets/splash.png')}
+            style={styles.menuLogo}
+          />
 
-      <View style={styles.imgDiv}>
-        <View style={styles.scoreDiv}>
-          <Text style={styles.scoreText}>LEVEL {level}</Text>
-          <Text style={styles.scoreText}>SCORE: {score}</Text>
-        </View>
-        <Image source={viewImg} style={styles.viewImg} />
-      </View>
-
-      <View style={styles.buttonsDiv}>
-        {!gameStart && !gameRecover && (
-          <TouchableHighlight onPress={start}>
-            <View style={styles.startButton}>
-              <Text style={styles.buttonText}>START</Text>
-            </View>
-          </TouchableHighlight>
-        )}
-        {gameStart && (
-          <TouchableHighlight onPress={resist}>
-            <View style={styles.resistButton}>
-              <Text style={styles.buttonText}>RESIST</Text>
-            </View>
-          </TouchableHighlight>
-        )}
-        {gameRecover && (
-          <TouchableHighlight>
-            <View style={styles.startButton}></View>
-          </TouchableHighlight>
-        )}
-        <TouchableHighlight onPress={reset}>
-          <View style={styles.submitButton}>
-            <Text style={styles.submitButtonText}>SUBMIT</Text>
-            <View />
+          <View style={styles.logoTextDiv}>
+            <Text style={styles.logoText}>TapTap Torture</Text>
           </View>
-        </TouchableHighlight>
-      </View>
+          <View style={styles.mainMenuButtonsDiv}>
+            <TouchableHighlight
+              onPress={startNewGame}
+              style={styles.mainMenuButton}
+            >
+              <Text style={styles.mainMenuButtonText}>New Game</Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              onPress={openLeaderboards}
+              style={styles.mainMenuButton}
+            >
+              <Text style={styles.mainMenuButtonText}>Leaderboards</Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              onPress={openLeaderboards}
+              style={styles.mainMenuButton}
+            >
+              <Text style={styles.mainMenuButtonText}>Options</Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      )}
+      {gameView === 'game' && (
+        <View styles={styles.gameView}>
+          {gameMenuActive && (
+            <View style={styles.gameMenuDiv}>
+              <TouchableHighlight
+                onPress={openMainMenu}
+                style={styles.gameMenuButton}
+              >
+                <Text style={styles.gameMenuText}>Main Menu</Text>
+              </TouchableHighlight>
+              <TouchableHighlight
+                onPress={toggleGameMenu}
+                style={styles.gameMenuButton}
+              >
+                <Text style={styles.gameMenuText}>Close</Text>
+              </TouchableHighlight>
+            </View>
+          )}
+          <DialogInput
+            isDialogVisible={nicknamePromptVisible}
+            title={'HIGH SCORE'}
+            message={'You made the Leaderboard'}
+            hintInput={'Nickname'}
+            submitInput={(inputText) => {
+              setNickname(inputText);
+            }}
+            closeDialog={() => {
+              setNicknamePromptVisible(false);
+            }}
+          ></DialogInput>
+          <View style={styles.gameHeader}>
+            <Text style={styles.highscoreText}>
+              BIG BOSS: {highScores[0].score}
+            </Text>
+            <TouchableHighlight onPress={toggleGameMenu}>
+              <Text>Menu</Text>
+            </TouchableHighlight>
+          </View>
+          <View style={styles.barsDiv}>
+            <View style={styles.barDiv}>
+              <View style={styles.healthbarBox}>
+                <View style={styles.healthbar} />
+              </View>
+              <Text style={styles.barText}>LIFE</Text>
+            </View>
+            <View>
+              <View style={styles.timebarBox}>
+                <View style={styles.timeBar} />
+              </View>
+              <Text style={styles.barText}>TIME</Text>
+            </View>
+          </View>
+
+          <View style={styles.imgDiv}>
+            <View style={styles.scoreDiv}>
+              <Text style={styles.scoreText}>LEVEL {level}</Text>
+              <Text style={styles.scoreText}>SCORE: {score}</Text>
+            </View>
+            <Image source={viewImg} style={styles.viewImg} />
+          </View>
+
+          <View style={styles.buttonsDiv}>
+            {!gameActive && !gameRecover && (
+              <TouchableHighlight onPress={start}>
+                <View style={styles.startButton}>
+                  <Text style={styles.buttonText}>START</Text>
+                </View>
+              </TouchableHighlight>
+            )}
+            {gameActive && (
+              <TouchableHighlight onPress={resist}>
+                <View style={styles.resistButton}>
+                  <Text style={styles.buttonText}>RESIST</Text>
+                </View>
+              </TouchableHighlight>
+            )}
+            {gameRecover && (
+              <TouchableHighlight>
+                <View style={styles.startButton}></View>
+              </TouchableHighlight>
+            )}
+            <TouchableHighlight onPress={reset}>
+              <View style={styles.submitButton}>
+                <Text style={styles.submitButtonText}>SUBMIT</Text>
+                <View />
+              </View>
+            </TouchableHighlight>
+          </View>
+        </View>
+      )}
+      {gameView === 'leaderboards' && (
+        <View style={styles.leaderboardView}>
+          <View>
+            <Text>SCORE</Text>
+          </View>
+          {highScoresList}
+          <TouchableHighlight onPress={openMainMenu}>
+            <Text>BACK</Text>
+          </TouchableHighlight>
+        </View>
+      )}
     </View>
   );
 };
