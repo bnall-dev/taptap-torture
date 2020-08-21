@@ -10,6 +10,7 @@ import {
   StyleSheet,
   TouchableHighlight,
   AsyncStorage,
+  TextInput,
 } from 'react-native';
 import active from './assets/active.gif';
 import idle from './assets/idle.gif';
@@ -17,7 +18,6 @@ import recover from './assets/recover.gif';
 import gameover from './assets/over.gif';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
-import DialogInput from 'react-native-dialog-input';
 import { globalStyles } from './styles/globalStyles.js';
 import { gameViewStyles } from './styles/gameViewStyles.js';
 import { mainMenuViewStyles } from './styles/mainMenuViewStyles.js';
@@ -26,6 +26,17 @@ import { AppLoading, SplashScreen } from 'expo';
 import LeaderboardView from './components/LeaderBoardView.js';
 import GameView from './components/GameView.js';
 import MainMenuView from './components/MainMenuView';
+import * as firebase from 'firebase';
+
+var config = {
+  apiKey: 'AIzaSyD3LqQ62PJgYpvDxukCbO5YVLUwEvzemDI',
+  authDomain: 'tap-tap-torture.firebaseapp.com',
+  databaseURL: 'https://tap-tap-torture.firebaseio.com',
+  storageBucket: 'tap-tap-torture.appspot.com',
+};
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(config);
+}
 
 //FONTS
 const customFonts = {
@@ -79,8 +90,74 @@ const App = () => {
   const [gameLoaded, setGameLoaded] = useState(false);
   const [gameMenuActive, setGameMenuActive] = useState(false);
   const [highScores, setHighScores] = useState([]);
-  const [nicknamePromptVisible, setNicknamePromptVisible] = useState(false);
-  const [nickname, setNickname] = useState('');
+  const [currentUser, setCurrentUser] = useState({});
+  const [userNickname, setUserNickname] = useState('');
+
+  useEffect(() => {
+    firebase
+      .auth()
+      .signInAnonymously()
+      .catch(function (error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+      });
+
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // User is signed in.
+        var isAnonymous = user.isAnonymous;
+        var uid = user.uid;
+
+        console.log(user.uid);
+
+        firebase
+          .database()
+          .ref('users/' + uid + '/highscore')
+          .on(
+            'value',
+            function (snapshot) {
+              const highscore = snapshot.val();
+
+              if (!highscore) {
+                firebase
+                  .database()
+                  .ref('users/' + uid)
+                  .set({
+                    highscore: 0,
+                  });
+                setCurrentUser({ uid, highscore: 0 });
+              } else {
+                console.log(highscore);
+                setCurrentUser({ uid, highscore });
+              }
+            },
+            function (error) {
+              console.log('Error: ' + error.code);
+            }
+          );
+
+        // ...
+      } else {
+        // User is signed out.
+        // ...
+      }
+      // ...
+    });
+  }, []);
+
+  useEffect(() => {
+    if (firebase.auth().currentUser) {
+      firebase
+        .database()
+        .ref('users/' + firebase.auth().currentUser.uid + '/highscore')
+        .on('value', function (snapshot) {
+          const highscore = snapshot.val();
+          console.log(highscore);
+          setCurrentUser({ ...currentUser, highscore });
+        });
+    }
+  }, []);
 
   //GET SCREEN DIMENSIONS
   const win = Dimensions.get('window');
@@ -104,29 +181,6 @@ const App = () => {
       }
     }, [delay]);
   }
-
-  const STORAGE_KEY = '@highScores';
-  const getHighScores = async () => {
-    const scores = await AsyncStorage.getItem(STORAGE_KEY);
-
-    if (scores !== null) {
-      setHighScores(JSON.parse(scores));
-    }
-  };
-
-  const saveHighScores = async (item) => {
-    try {
-      var jsonOfItem = await AsyncStorage.setItem(STORAGE_KEY, item);
-
-      setHighScores(JSON.parse(item));
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  useEffect(() => {
-    getHighScores();
-  }, []);
 
   // LOWER HEALTH DURING ACTIVE STATE
   useInterval(() => {
@@ -206,27 +260,36 @@ const App = () => {
   //RESET GAME
   const reset = async () => {
     // await AsyncStorage.removeItem(STORAGE_KEY);
-    const scoreObject = { score, level, user: nickname };
-    if (highScores === [] || highScores.find((sc) => sc.score < score)) {
-      setNicknamePromptVisible(true);
+    if (score > currentUser.highscore) {
+      firebase
+        .database()
+        .ref('users/' + currentUser.uid)
+        .set({
+          highscore: score,
+        });
     }
-    if (!nicknamePromptVisible) {
-      const array = [...highScores, scoreObject];
-      array.sort((a, b) => {
-        return a.score - b.score;
-      });
-      array.reverse();
-      if (array.length > 10) {
-        array.pop();
-      }
-      saveHighScores(JSON.stringify(array));
 
-      setLevel(0);
-      setScore(0);
-      setGameActive(false);
-      setGameOver(false);
-      setGameReset(true);
+    const scoreObject = { score, level, nickname: userNickname };
+    if (highScores === [] || highScores.find((sc) => sc.score < score)) {
     }
+
+    const array = [...highScores, scoreObject];
+    array.sort((a, b) => {
+      return a.score - b.score;
+    });
+    array.reverse();
+    if (array.length > 10) {
+      array.pop();
+    }
+    firebase.database().ref('highscores/').set({
+      array,
+    });
+
+    setLevel(0);
+    setScore(0);
+    setGameActive(false);
+    setGameOver(false);
+    setGameReset(true);
 
     try {
       // Don't forget to unload the sound from memory
@@ -244,6 +307,25 @@ const App = () => {
       setHealth(health + 1);
     }
   };
+
+  useEffect(() => {
+    console.log(highScores);
+  }, [highScores]);
+
+  useEffect(() => {
+    firebase
+      .database()
+      .ref('highscores/')
+      .on('value', function (snapshot) {
+        const highscores = snapshot.val();
+
+        if (highscores) {
+          setHighScores(highscores.array);
+        } else {
+          setHighScores([]);
+        }
+      });
+  }, []);
 
   // RESET STATE EFFECTS
   useEffect(() => {
@@ -445,23 +527,24 @@ const App = () => {
               </TouchableHighlight>
             </View>
           )}
-          <DialogInput
-            isDialogVisible={nicknamePromptVisible}
-            title={'HIGH SCORE'}
-            message={'You made the Leaderboard'}
-            hintInput={'Nickname'}
-            submitInput={(inputText) => {
-              setNickname(inputText);
-              setNicknamePromptVisible(false);
-            }}
-          ></DialogInput>
+
           <View style={gameViewStyles.gameHeader}>
             <Text style={gameViewStyles.highscoreText}>
-              BIG BOSS: {highScores[0].score}
+              {highScores[0].nickname}: {highScores[0].score}
+            </Text>
+            <Text style={gameViewStyles.highscoreText}>
+              HIGH SCORE:
+              {currentUser.highscore}
             </Text>
             <TouchableHighlight onPress={toggleGameMenu}>
               <Text>Menu</Text>
             </TouchableHighlight>
+            <TextInput
+              placeholder="CODE NAME"
+              value={userNickname}
+              onChangeText={(text) => setUserNickname(text)}
+              style={{ backgroundColor: 'white' }}
+            ></TextInput>
           </View>
           <View style={gameViewStyles.barsDiv}>
             <View style={gameViewStyles.barDiv}>

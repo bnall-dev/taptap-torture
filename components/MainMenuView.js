@@ -24,9 +24,7 @@ const MainMenuView = ({
           style={mainMenuViewStyles.mainMenuButton}
           onPress={openLeaderboards}
         >
-          <Text style={mainMenuViewStyles.mainMenuButtonText}>
-            Leaderboards
-          </Text>
+          <Text style={mainMenuViewStyles.mainMenuButtonText}>Leaderboard</Text>
         </TouchableHighlight>
         <TouchableHighlight style={mainMenuViewStyles.mainMenuButton}>
           <Text style={mainMenuViewStyles.mainMenuButtonText}>Options</Text>

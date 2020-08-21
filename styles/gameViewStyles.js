@@ -4,7 +4,7 @@ const gameViewStyles = StyleSheet.create({
   ////GAMEVIEW STYLES
   //GAME HEADER STYLES
   gameHeader: {
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
   scoreDiv: {
     flexDirection: 'row',
@@ -12,7 +12,8 @@ const gameViewStyles = StyleSheet.create({
 
   highscoreText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 12,
+    fontFamily: 'Gameplay',
   },
   //GAME BARS STYLES
   barsDiv: {
@@ -51,7 +52,7 @@ const gameViewStyles = StyleSheet.create({
 
   //BUTTON STYLES
   buttonsDiv: {
-    margin: 16,
+    margin: 8,
     borderWidth: 5,
     borderColor: 'black',
   },

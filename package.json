@@ -23,7 +23,8 @@
     "react-native-web": "~0.11.7",
     "sequelize": "^6.3.4",
     "url": "^0.11.0",
-    "watchman": "^1.0.0"
+    "watchman": "^1.0.0",
+    "firebase": "7.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.6",
