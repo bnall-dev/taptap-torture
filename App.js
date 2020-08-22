@@ -92,6 +92,7 @@ const App = () => {
   const [highScores, setHighScores] = useState([]);
   const [currentUser, setCurrentUser] = useState({});
   const [userNickname, setUserNickname] = useState('');
+  const [leaderboardInputActive, setLeaderboardInputActive] = useState(false);
 
   useEffect(() => {
     firebase
@@ -269,27 +270,18 @@ const App = () => {
         });
     }
 
-    const scoreObject = { score, level, nickname: userNickname };
-    if (highScores === [] || highScores.find((sc) => sc.score < score)) {
+    if (
+      highScores.length < 10 ||
+      score > highScores[highScores.length - 1].score
+    ) {
+      setLeaderboardInputActive(true);
+    } else {
+      setLevel(0);
+      setScore(0);
+      setGameActive(false);
+      setGameOver(false);
+      setGameReset(true);
     }
-
-    const array = [...highScores, scoreObject];
-    array.sort((a, b) => {
-      return a.score - b.score;
-    });
-    array.reverse();
-    if (array.length > 10) {
-      array.pop();
-    }
-    firebase.database().ref('highscores/').set({
-      array,
-    });
-
-    setLevel(0);
-    setScore(0);
-    setGameActive(false);
-    setGameOver(false);
-    setGameReset(true);
 
     try {
       // Don't forget to unload the sound from memory
@@ -528,6 +520,102 @@ const App = () => {
             </View>
           )}
 
+          {leaderboardInputActive && (
+            <View
+              style={{
+                position: 'absolute',
+                backgroundColor: 'rgba(0,0,0,0.9)',
+                zIndex: 2,
+                padding: 16,
+                width: win.width * 0.8,
+                margin: 32,
+                borderColor: 'rgb(125,0,0)',
+                borderWidth: 2,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: 'Tactical-Espionage-Action',
+                  color: 'rgb(175,0,0)',
+                  textAlign: 'center',
+                  fontSize: 24,
+                }}
+              >
+                Pretty Good
+              </Text>
+              <View
+                style={{
+                  borderBottomColor: 'rgb(125,0,0)',
+                  borderBottomWidth: 1,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Metal-Gear-Solid-2',
+                  textAlign: 'center',
+                  color: 'white',
+                  paddingTop: 4,
+                  margin: 8,
+                }}
+              >
+                You made the Leaderboard!
+              </Text>
+              <TextInput
+                placeholder="CODE NAME"
+                value={userNickname}
+                onChangeText={(text) => setUserNickname(text)}
+                style={{
+                  backgroundColor: 'white',
+                  textAlign: 'center',
+                  fontFamily: 'Metal-Gear-Solid-2',
+                  paddingTop: 4,
+                  fontSize: 18,
+                  lineHeight: 25,
+                }}
+              ></TextInput>
+              <TouchableHighlight
+                style={{
+                  borderColor: 'rgb(125,0,0)',
+                  borderWidth: 1,
+                  backgroundColor: 'black',
+                  marginTop: 8,
+                }}
+                onPress={() => {
+                  const scoreObject = { score, level, nickname: userNickname };
+
+                  const array = [...highScores, scoreObject];
+                  array.sort((a, b) => {
+                    return a.score - b.score;
+                  });
+                  array.reverse();
+                  if (array.length > 10) {
+                    array.pop();
+                  }
+                  firebase.database().ref('highscores/').set({
+                    array,
+                  });
+                  setLevel(0);
+                  setScore(0);
+                  setGameActive(false);
+                  setGameOver(false);
+                  setGameReset(true);
+                  setUserNickname('');
+                  setLeaderboardInputActive(false);
+                }}
+              >
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontFamily: 'Tactical-Espionage-Action',
+                    color: 'rgb(175,0,0)',
+                  }}
+                >
+                  SUBMIT
+                </Text>
+              </TouchableHighlight>
+            </View>
+          )}
+
           <View style={gameViewStyles.gameHeader}>
             <Text style={gameViewStyles.highscoreText}>
               {highScores[0].nickname}: {highScores[0].score}
@@ -539,12 +627,6 @@ const App = () => {
             <TouchableHighlight onPress={toggleGameMenu}>
               <Text>Menu</Text>
             </TouchableHighlight>
-            <TextInput
-              placeholder="CODE NAME"
-              value={userNickname}
-              onChangeText={(text) => setUserNickname(text)}
-              style={{ backgroundColor: 'white' }}
-            ></TextInput>
           </View>
           <View style={gameViewStyles.barsDiv}>
             <View style={gameViewStyles.barDiv}>
