@@ -18,7 +18,7 @@ const leaderboardViewStyles = StyleSheet.create({
     fontFamily: 'Metal-Gear-Solid-2',
     flex: 1,
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 14,
     color: 'white',
     paddingTop: 5,
   },

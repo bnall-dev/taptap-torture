@@ -5,6 +5,7 @@ const MainMenuView = ({
   mainMenuViewStyles,
   startNewGame,
   openLeaderboards,
+  openOptions,
 }) => {
   return (
     <View style={mainMenuViewStyles.mainMenuView}>
@@ -26,7 +27,10 @@ const MainMenuView = ({
         >
           <Text style={mainMenuViewStyles.mainMenuButtonText}>Leaderboard</Text>
         </TouchableHighlight>
-        <TouchableHighlight style={mainMenuViewStyles.mainMenuButton}>
+        <TouchableHighlight
+          style={mainMenuViewStyles.mainMenuButton}
+          onPress={openOptions}
+        >
           <Text style={mainMenuViewStyles.mainMenuButtonText}>Options</Text>
         </TouchableHighlight>
       </View>

@@ -26,6 +26,7 @@ import { AppLoading, SplashScreen } from 'expo';
 import LeaderboardView from './components/LeaderBoardView.js';
 import GameView from './components/GameView.js';
 import MainMenuView from './components/MainMenuView';
+import OptionsView from './components/OptionsView';
 import * as firebase from 'firebase';
 
 var config = {
@@ -93,6 +94,7 @@ const App = () => {
   const [currentUser, setCurrentUser] = useState({});
   const [userNickname, setUserNickname] = useState('');
   const [leaderboardInputActive, setLeaderboardInputActive] = useState(false);
+  const [resetHighscoreActive, setResetHighscoreActive] = useState(false);
 
   useEffect(() => {
     firebase
@@ -396,8 +398,15 @@ const App = () => {
     }
   }, [health, time]);
 
-  const submitHighScore = async (scores) => {
-    await AsyncStorage.setItem('@MySuperStore:key');
+  const openResetHighscore = () => {
+    setResetHighscoreActive(true);
+  };
+
+  const resetHighScore = () => {
+    firebase
+      .database()
+      .ref('users/' + currentUser.uid + '/highscore')
+      .set(0);
   };
 
   //////REQUIRED STYLES
@@ -422,12 +431,14 @@ const App = () => {
 
     gameMenuDiv: {
       position: 'absolute',
-      backgroundColor: 'rgba(0,0,0,0.9)',
+      backgroundColor: 'black',
       zIndex: 2,
       padding: 16,
       height: win.height * 0.8,
       width: win.width * 0.8,
       margin: win.width * 0.1,
+      borderWidth: 2,
+      borderColor: 'rgb(125,0,0)',
     },
 
     logoTextDiv: {
@@ -490,6 +501,10 @@ const App = () => {
     setGameView('leaderboards');
   };
 
+  const openOptions = () => {
+    setGameView('options');
+  };
+
   return (
     <View style={globalStyles.app}>
       <StatusBar hidden />
@@ -499,6 +514,7 @@ const App = () => {
           mainMenuViewStyles={mainMenuViewStyles}
           startNewGame={startNewGame}
           openLeaderboards={openLeaderboards}
+          openOptions={openOptions}
         />
       )}
       {gameView === 'game' && (
@@ -562,6 +578,7 @@ const App = () => {
               </Text>
               <TextInput
                 placeholder="CODE NAME"
+                maxLength={12}
                 value={userNickname}
                 onChangeText={(text) => setUserNickname(text)}
                 style={{
@@ -685,6 +702,16 @@ const App = () => {
           highScores={highScores}
           leaderboardViewStyles={leaderboardViewStyles}
           openMainMenu={openMainMenu}
+        />
+      )}
+      {gameView === 'options' && (
+        <OptionsView
+          setGameView={setGameView}
+          openResetHighscore={openResetHighscore}
+          resetHighscoreActive={resetHighscoreActive}
+          setResetHighscoreActive={setResetHighscoreActive}
+          currentUser={currentUser}
+          resetHighScore={resetHighScore}
         />
       )}
     </View>
