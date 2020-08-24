@@ -17,8 +17,8 @@ const MainMenuView = ({
   openOptions,
   globalStyles,
 }) => {
-  const moveImg = new Animated.Value(-15);
-  const moveImg2 = new Animated.Value(15);
+  const moveImg = new Animated.Value(0);
+  const moveImg2 = new Animated.Value(0);
   const backgroundPatternMove = new Animated.Value(0);
 
   Animated.loop(
@@ -36,24 +36,26 @@ const MainMenuView = ({
     Animated.parallel([
       Animated.sequence([
         Animated.timing(moveImg, {
+          delay: 5000,
           toValue: 15,
           duration: 5000,
           useNativeDriver: true,
         }),
         Animated.timing(moveImg, {
-          toValue: -15,
+          toValue: 0,
           duration: 5000,
           useNativeDriver: true,
         }),
       ]),
       Animated.sequence([
         Animated.timing(moveImg2, {
+          delay: 5000,
           toValue: -15,
           duration: 5000,
           useNativeDriver: true,
         }),
         Animated.timing(moveImg2, {
-          toValue: 15,
+          toValue: 0,
           duration: 5000,
           useNativeDriver: true,
         }),

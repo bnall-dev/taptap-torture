@@ -101,6 +101,79 @@ const App = () => {
   const [leaderboardInputActive, setLeaderboardInputActive] = useState(false);
   const [resetHighscoreActive, setResetHighscoreActive] = useState(false);
   const [loginOptionActive, setLoginOptionActive] = useState(false);
+  const [zIndex2Blackout, setZIndex2Blackout] = useState(false);
+
+  const [activePopup, setActivePopup] = useState(null);
+
+  const togglePopup = (popupRoot) => {
+    if (activePopup === popupRoot) {
+      setActivePopup(null);
+    } else {
+      setActivePopup(popupRoot);
+    }
+  };
+
+  const MenuButton = (props) => {
+    return (
+      <TouchableHighlight
+        onPress={props.onPress}
+        style={globalStyles.menuButtonLong}
+      >
+        <Text style={globalStyles.menuButtonLongText}>{props.text}</Text>
+      </TouchableHighlight>
+    );
+  };
+
+  const PopupWindow = (props) => {
+    return (
+      <View style={globalStyles.popupWindowRoot}>
+        <View style={globalStyles.popupWindowCover} />
+        <View style={globalStyles.popUpWindowView}>
+          {props.headerText && (
+            <Text style={globalStyles.menuHeaderText}>{props.headerText}</Text>
+          )}
+          {props.body}
+          <MenuButton
+            onPress={() => togglePopup(props.popupRoot)}
+            text="CANCEL"
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const GameMenuPopupWindow = () => {
+    const body = (
+      <View style={globalStyles.popupWindowBody}>
+        <MenuButton text="ABORT" />
+      </View>
+    );
+
+    return (
+      <PopupWindow popupRoot="gameMenuPopup" headerText="PAUSED" body={body} />
+    );
+  };
+
+  const ResetHighscorePopupWindow = () => {
+    const body = (
+      <View style={globalStyles.popupWindowBody}>
+        <MenuButton text="CONFIRM" />
+      </View>
+    );
+
+    return <PopupWindow headerText="RESET" body={body} />;
+  };
+
+  const SignInPopupWindow = () => {
+    const body = (
+      <View style={globalStyles.popupWindowBody}>
+        <MenuButton text="FACEBOOK" />
+        <MenuButton text="GOOGLE" />
+      </View>
+    );
+
+    return <PopupWindow headerText="SIGN IN" body={body} />;
+  };
 
   useEffect(() => {
     firebase
@@ -283,6 +356,7 @@ const App = () => {
       score > highScores[highScores.length - 1].score
     ) {
       setLeaderboardInputActive(true);
+      setZIndex2Blackout(true);
     } else {
       setLevel(0);
       setScore(0);
@@ -442,10 +516,12 @@ const App = () => {
 
   const openResetHighscore = () => {
     setResetHighscoreActive(true);
+    setZIndex2Blackout(true);
   };
 
   const openLoginOption = () => {
     setLoginOptionActive(true);
+    setZIndex2Blackout(true);
   };
 
   const resetHighScore = () => {
@@ -522,8 +598,10 @@ const App = () => {
   const toggleGameMenu = () => {
     if (gameView === 'game' && !gameMenuActive) {
       setGameMenuActive(true);
+      setZIndex2Blackout(true);
     } else {
       setGameMenuActive(false);
+      setZIndex2Blackout(false);
     }
   };
 
@@ -538,6 +616,9 @@ const App = () => {
   return (
     <View style={globalStyles.app}>
       <StatusBar hidden />
+
+      {activePopup === 'gameMenu' && <GameMenuPopupWindow />}
+
       {gameView === 'mainMenu' && (
         <MainMenuView
           styles={styles}
@@ -619,13 +700,26 @@ const App = () => {
                   setGameReset(true);
                   setUserNickname('');
                   setLeaderboardInputActive(false);
+                  setZIndex2Blackout(false);
                 }}
               >
                 <Text style={globalStyles.menuButtonLongText}>SUBMIT</Text>
               </TouchableHighlight>
             </View>
           )}
-
+          {zIndex2Blackout && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                zIndex: 2,
+              }}
+            />
+          )}
           <View style={gameViewStyles.gameHeader}>
             <View>
               <Text
@@ -654,7 +748,7 @@ const App = () => {
                   paddingRight: 16,
                 },
               ]}
-              onPress={toggleGameMenu}
+              onPress={() => toggleGameMenu()}
               activeOpacity={1}
               underlayColor="rgb(50,0,0)"
             >
@@ -778,6 +872,8 @@ const App = () => {
           loginOptionActive={loginOptionActive}
           setLoginOptionActive={setLoginOptionActive}
           globalStyles={globalStyles}
+          zIndex2Blackout={zIndex2Blackout}
+          setZIndex2Blackout={setZIndex2Blackout}
         />
       )}
     </View>

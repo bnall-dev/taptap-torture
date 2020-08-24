@@ -11,6 +11,8 @@ const OptionsView = ({
   loginOptionActive,
   openLoginOption,
   globalStyles,
+  zIndex2Blackout,
+  setZIndex2Blackout,
 }) => {
   return (
     <View style={globalStyles.viewWindow}>
@@ -27,7 +29,10 @@ const OptionsView = ({
           </TouchableHighlight>
           <TouchableHighlight
             style={globalStyles.menuButtonLong}
-            onPress={() => setResetHighscoreActive(false)}
+            onPress={() => {
+              setResetHighscoreActive(false);
+              setZIndex2Blackout(false);
+            }}
           >
             <Text style={globalStyles.menuButtonLongText}>CANCEL</Text>
           </TouchableHighlight>
@@ -58,14 +63,29 @@ const OptionsView = ({
           >
             <Text
               style={globalStyles.menuButtonLongText}
-              onPress={() => setLoginOptionActive(false)}
+              onPress={() => {
+                setLoginOptionActive(false);
+                setZIndex2Blackout(false);
+              }}
             >
               CANCEL
             </Text>
           </TouchableHighlight>
         </View>
       )}
-
+      {zIndex2Blackout && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            zIndex: 2,
+          }}
+        />
+      )}
       <Text style={globalStyles.menuHeaderText}>OPTIONS</Text>
       <Text style={globalStyles.copyText}>MISSION BRIEFING</Text>
       <View style={{ borderBottomWidth: 1, borderBottomColor: 'white' }}></View>
@@ -108,7 +128,9 @@ const OptionsView = ({
         Achievements
       </Text>
       <TouchableHighlight
-        onPress={() => setGameView('mainMenu')}
+        onPress={() => {
+          setGameView('mainMenu');
+        }}
         style={globalStyles.menuButtonLong}
         activeOpacity={1}
         underlayColor="rgb(50,0,0)"

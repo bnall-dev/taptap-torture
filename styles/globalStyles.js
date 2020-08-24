@@ -56,7 +56,32 @@ const globalStyles = StyleSheet.create({
     backgroundColor: 'black',
     borderWidth: 1,
     borderColor: 'white',
-    zIndex: 2,
+    zIndex: 3,
+  },
+  //POPUP WINDOW
+  popupWindowRoot: {
+    position: 'absolute',
+    flex: 1,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 5,
+  },
+  popupWindowCover: {
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+  },
+  popUpWindowView: {
+    flex: 1,
+    margin: 16,
+    padding: 16,
+    backgroundColor: 'rgb(0,0,0)',
+    borderColor: 'rgb(255,255,255)',
+    borderWidth: 2,
   },
 });
 
