@@ -6,32 +6,43 @@ const MainMenuView = ({
   startNewGame,
   openLeaderboards,
   openOptions,
+  globalStyles,
 }) => {
   return (
-    <View style={mainMenuViewStyles.mainMenuView}>
+    <View style={[globalStyles.viewWindow, { padding: 0 }]}>
       <Image source={require('../assets/splash.png')} style={styles.menuLogo} />
 
       <View style={styles.logoTextDiv}>
-        <Text style={mainMenuViewStyles.logoText}>TapTap Torture</Text>
+        <Text style={mainMenuViewStyles.logoText}>
+          TapTap
+          <br />
+          Torture
+        </Text>
       </View>
       <View style={styles.mainMenuButtonsDiv}>
         <TouchableHighlight
-          style={mainMenuViewStyles.mainMenuButton}
+          activeOpacity={1}
+          underlayColor="rgb(50,0,0)"
+          style={globalStyles.menuButtonLong}
           onPress={startNewGame}
         >
-          <Text style={mainMenuViewStyles.mainMenuButtonText}>New Game</Text>
+          <Text style={globalStyles.menuButtonLongText}>New Game</Text>
         </TouchableHighlight>
         <TouchableHighlight
-          style={mainMenuViewStyles.mainMenuButton}
+          activeOpacity={1}
+          underlayColor="rgb(50,0,0)"
+          style={globalStyles.menuButtonLong}
           onPress={openLeaderboards}
         >
-          <Text style={mainMenuViewStyles.mainMenuButtonText}>Leaderboard</Text>
+          <Text style={globalStyles.menuButtonLongText}>Leaderboard</Text>
         </TouchableHighlight>
         <TouchableHighlight
-          style={mainMenuViewStyles.mainMenuButton}
+          activeOpacity={1}
+          underlayColor="rgb(50,0,0)"
+          style={globalStyles.menuButtonLong}
           onPress={openOptions}
         >
-          <Text style={mainMenuViewStyles.mainMenuButtonText}>Options</Text>
+          <Text style={globalStyles.menuButtonLongText}>Options</Text>
         </TouchableHighlight>
       </View>
     </View>

@@ -95,6 +95,7 @@ const App = () => {
   const [userNickname, setUserNickname] = useState('');
   const [leaderboardInputActive, setLeaderboardInputActive] = useState(false);
   const [resetHighscoreActive, setResetHighscoreActive] = useState(false);
+  const [loginOptionActive, setLoginOptionActive] = useState(false);
 
   useEffect(() => {
     firebase
@@ -402,6 +403,10 @@ const App = () => {
     setResetHighscoreActive(true);
   };
 
+  const openLoginOption = () => {
+    setLoginOptionActive(true);
+  };
+
   const resetHighScore = () => {
     firebase
       .database()
@@ -429,18 +434,6 @@ const App = () => {
       backgroundColor: 'rgb(20,20,200)',
     },
 
-    gameMenuDiv: {
-      position: 'absolute',
-      backgroundColor: 'black',
-      zIndex: 2,
-      padding: 16,
-      height: win.height * 0.8,
-      width: win.width * 0.8,
-      margin: win.width * 0.1,
-      borderWidth: 2,
-      borderColor: 'rgb(125,0,0)',
-    },
-
     logoTextDiv: {
       backgroundColor: 'black',
       borderBottomWidth: 10,
@@ -452,15 +445,14 @@ const App = () => {
       shadowOffset: { width: 0, height: -40 },
       shadowOpacity: 0.3,
       shadowRadius: 30,
+      marginBottom: 8,
     },
     menuLogo: {
       height: win.width,
       width: win.width,
     },
     mainMenuButtonsDiv: {
-      margin: 4,
       backgroundColor: 'black',
-      width: win.width,
     },
   });
 
@@ -515,65 +507,38 @@ const App = () => {
           startNewGame={startNewGame}
           openLeaderboards={openLeaderboards}
           openOptions={openOptions}
+          globalStyles={globalStyles}
         />
       )}
       {gameView === 'game' && (
-        <View styles={gameViewStyles.gameView}>
+        <View style={gameViewStyles.gameView}>
           {gameMenuActive && (
-            <View style={styles.gameMenuDiv}>
+            <View style={globalStyles.popupWindow}>
+              <Text style={globalStyles.menuHeaderText}>Menu</Text>
               <TouchableHighlight
                 onPress={openMainMenu}
-                style={gameViewStyles.gameMenuButton}
+                style={globalStyles.menuButtonLong}
+                activeOpacity={1}
+                underlayColor="rgb(50,0,0)"
               >
-                <Text style={gameViewStyles.gameMenuText}>Main Menu</Text>
+                <Text style={globalStyles.menuButtonLongText}>Quit</Text>
               </TouchableHighlight>
               <TouchableHighlight
                 onPress={toggleGameMenu}
-                style={gameViewStyles.gameMenuButton}
+                style={globalStyles.menuButtonLong}
+                activeOpacity={1}
+                underlayColor="rgb(50,0,0)"
               >
-                <Text style={gameViewStyles.gameMenuText}>Close</Text>
+                <Text style={globalStyles.menuButtonLongText}>Back</Text>
               </TouchableHighlight>
             </View>
           )}
 
           {leaderboardInputActive && (
-            <View
-              style={{
-                position: 'absolute',
-                backgroundColor: 'rgba(0,0,0,0.9)',
-                zIndex: 2,
-                padding: 16,
-                width: win.width * 0.8,
-                margin: 32,
-                borderColor: 'rgb(125,0,0)',
-                borderWidth: 2,
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: 'Tactical-Espionage-Action',
-                  color: 'rgb(175,0,0)',
-                  textAlign: 'center',
-                  fontSize: 24,
-                }}
-              >
-                Pretty Good
-              </Text>
-              <View
-                style={{
-                  borderBottomColor: 'rgb(125,0,0)',
-                  borderBottomWidth: 1,
-                }}
-              />
-              <Text
-                style={{
-                  fontFamily: 'Metal-Gear-Solid-2',
-                  textAlign: 'center',
-                  color: 'white',
-                  paddingTop: 4,
-                  margin: 8,
-                }}
-              >
+            <View style={globalStyles.popupWindow}>
+              <Text style={globalStyles.menuHeaderText}>Pretty Good</Text>
+
+              <Text style={globalStyles.copyText}>
                 You made the Leaderboard!
               </Text>
               <TextInput
@@ -584,19 +549,17 @@ const App = () => {
                 style={{
                   backgroundColor: 'white',
                   textAlign: 'center',
-                  fontFamily: 'Metal-Gear-Solid-2',
-                  paddingTop: 4,
-                  fontSize: 18,
-                  lineHeight: 25,
+                  fontFamily: 'Helvetica',
+                  fontSize: 16,
+                  transform: [{ scaleY: 0.8 }],
+                  padding: 6,
+                  margin: 4,
                 }}
               ></TextInput>
               <TouchableHighlight
-                style={{
-                  borderColor: 'rgb(125,0,0)',
-                  borderWidth: 1,
-                  backgroundColor: 'black',
-                  marginTop: 8,
-                }}
+                style={globalStyles.menuButtonLong}
+                activeOpacity={1}
+                underlayColor="rgb(50,0,0)"
                 onPress={() => {
                   const scoreObject = { score, level, nickname: userNickname };
 
@@ -620,29 +583,40 @@ const App = () => {
                   setLeaderboardInputActive(false);
                 }}
               >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontFamily: 'Tactical-Espionage-Action',
-                    color: 'rgb(175,0,0)',
-                  }}
-                >
-                  SUBMIT
-                </Text>
+                <Text style={globalStyles.menuButtonLongText}>SUBMIT</Text>
               </TouchableHighlight>
             </View>
           )}
 
           <View style={gameViewStyles.gameHeader}>
-            <Text style={gameViewStyles.highscoreText}>
-              {highScores[0].nickname}: {highScores[0].score}
-            </Text>
-            <Text style={gameViewStyles.highscoreText}>
-              HIGH SCORE:
-              {currentUser.highscore}
-            </Text>
-            <TouchableHighlight onPress={toggleGameMenu}>
-              <Text>Menu</Text>
+            <View>
+              <Text
+                style={[
+                  globalStyles.copyText,
+                  { fontSize: 14, lineHeight: 14, textAlign: 'left' },
+                ]}
+              >
+                {highScores[0].nickname.toUpperCase()}: {highScores[0].score}
+              </Text>
+              <Text
+                style={[
+                  globalStyles.copyText,
+                  { fontSize: 14, lineHeight: 14, textAlign: 'left' },
+                ]}
+              >
+                HIGH SCORE: {currentUser.highscore}
+              </Text>
+            </View>
+            <TouchableHighlight
+              style={[
+                globalStyles.menuButtonLong,
+                { margin: 0, paddingLeft: 16, paddingRight: 16 },
+              ]}
+              onPress={toggleGameMenu}
+              activeOpacity={1}
+              underlayColor="rgb(50,0,0)"
+            >
+              <Text style={globalStyles.menuButtonLongText}>Menu</Text>
             </TouchableHighlight>
           </View>
           <View style={gameViewStyles.barsDiv}>
@@ -650,49 +624,76 @@ const App = () => {
               <View style={gameViewStyles.healthbarBox}>
                 <View style={styles.healthbar} />
               </View>
-              <Text style={gameViewStyles.barText}>LIFE</Text>
+
+              <Text
+                style={[
+                  globalStyles.copyText,
+                  { position: 'absolute', left: 8, bottom: -8 },
+                ]}
+              >
+                LIFE
+              </Text>
             </View>
             <View>
               <View style={styles.timebarBox}>
                 <View style={styles.timeBar} />
               </View>
-              <Text style={gameViewStyles.barText}>TIME</Text>
+              <Text
+                style={[
+                  globalStyles.copyText,
+                  { position: 'absolute', left: 8, bottom: -8 },
+                ]}
+              >
+                TIME
+              </Text>
             </View>
           </View>
 
           <View style={gameViewStyles.imgDiv}>
             <View style={gameViewStyles.scoreDiv}>
-              <Text style={gameViewStyles.scoreText}>LEVEL {level}</Text>
-              <Text style={gameViewStyles.scoreText}>SCORE: {score}</Text>
+              <Text style={[globalStyles.copyText, { textAlign: 'left' }]}>
+                LEVEL {level}
+              </Text>
+              <Text style={[globalStyles.copyText, { textAlign: 'right' }]}>
+                SCORE: {score}
+              </Text>
             </View>
             <Image source={viewImg} style={gameViewStyles.viewImg} />
           </View>
 
           <View style={gameViewStyles.buttonsDiv}>
             {!gameActive && !gameRecover && (
-              <TouchableHighlight onPress={start}>
-                <View style={gameViewStyles.startButton}>
-                  <Text style={gameViewStyles.buttonText}>START</Text>
-                </View>
+              <TouchableHighlight
+                activeOpacity={1}
+                underlayColor="rgb(100,0,0)"
+                onPress={start}
+                style={gameViewStyles.startButton}
+              >
+                <Text style={gameViewStyles.buttonText}>START</Text>
               </TouchableHighlight>
             )}
             {gameActive && (
-              <TouchableHighlight onPress={resist}>
-                <View style={gameViewStyles.resistButton}>
-                  <Text style={gameViewStyles.buttonText}>RESIST</Text>
-                </View>
+              <TouchableHighlight
+                activeOpacity={1}
+                underlayColor="rgb(200,0,0)"
+                onPress={resist}
+                style={gameViewStyles.resistButton}
+              >
+                <Text style={gameViewStyles.buttonText}>RESIST</Text>
               </TouchableHighlight>
             )}
             {gameRecover && (
-              <TouchableHighlight>
-                <View style={gameViewStyles.startButton}></View>
+              <TouchableHighlight style={gameViewStyles.startButton}>
+                <View></View>
               </TouchableHighlight>
             )}
-            <TouchableHighlight onPress={reset}>
-              <View style={gameViewStyles.submitButton}>
-                <Text style={gameViewStyles.submitButtonText}>SUBMIT</Text>
-                <View />
-              </View>
+            <TouchableHighlight
+              activeOpacity={1}
+              underlayColor="rgb(0,0,200)"
+              onPress={reset}
+              style={gameViewStyles.submitButton}
+            >
+              <Text style={gameViewStyles.submitButtonText}>SUBMIT</Text>
             </TouchableHighlight>
           </View>
         </View>
@@ -702,6 +703,7 @@ const App = () => {
           highScores={highScores}
           leaderboardViewStyles={leaderboardViewStyles}
           openMainMenu={openMainMenu}
+          globalStyles={globalStyles}
         />
       )}
       {gameView === 'options' && (
@@ -712,6 +714,10 @@ const App = () => {
           setResetHighscoreActive={setResetHighscoreActive}
           currentUser={currentUser}
           resetHighScore={resetHighScore}
+          openLoginOption={openLoginOption}
+          loginOptionActive={loginOptionActive}
+          setLoginOptionActive={setLoginOptionActive}
+          globalStyles={globalStyles}
         />
       )}
     </View>

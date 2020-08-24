@@ -7,120 +7,113 @@ const OptionsView = ({
   setResetHighscoreActive,
   currentUser,
   resetHighScore,
+  setLoginOptionActive,
+  loginOptionActive,
+  openLoginOption,
+  globalStyles,
 }) => {
   return (
-    <View
-      style={{
-        backgroundColor: 'black',
-        flex: 1,
-        margin: 16,
-        padding: 16,
-        alignItems: 'stretch',
-      }}
-    >
+    <View style={globalStyles.viewWindow}>
       {resetHighscoreActive && (
-        <View
-          style={{
-            left: 0,
-            right: 0,
-            marginTop: 64,
-            padding: 16,
-            zIndex: 2,
-            position: 'absolute',
-            backgroundColor: 'black',
-            borderWidth: 1,
-            borderColor: 'white',
-            alignItems: 'stretch',
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: 'Tactical-Espionage-Action',
-              backgroundColor: 'rgb(175,0,0)',
-              padding: 4,
-            }}
-          >
-            CONFIRM
-          </Text>
+        <View style={globalStyles.popupWindow}>
+          <Text style={globalStyles.menuHeaderText}>Reset</Text>
           <TouchableHighlight
-            style={{
-              backgroundColor: 'black',
-              borderWidth: 1,
-              borderColor: 'rgb(125,0,0)',
-              padding: 4,
-              marginTop: 8,
-              marginBottom: 4,
-            }}
+            activeOpacity={1}
+            underlayColor="rgb(50,0,0)"
+            style={globalStyles.menuButtonLong}
             onPress={resetHighScore}
           >
-            <Text
-              style={{
-                color: 'rgb(175,0,0)',
-                fontFamily: 'Tactical-Espionage-Action',
-              }}
-            >
-              Reset
-            </Text>
+            <Text style={globalStyles.menuButtonLongText}>Confirm</Text>
           </TouchableHighlight>
           <TouchableHighlight
-            style={{
-              backgroundColor: 'black',
-              borderWidth: 1,
-              borderColor: 'rgb(125,0,0)',
-              padding: 4,
-            }}
+            style={globalStyles.menuButtonLong}
             onPress={() => setResetHighscoreActive(false)}
           >
+            <Text style={globalStyles.menuButtonLongText}>Cancel</Text>
+          </TouchableHighlight>
+        </View>
+      )}
+
+      {loginOptionActive && (
+        <View style={globalStyles.popupWindow}>
+          <Text style={globalStyles.menuHeaderText}>Log In</Text>
+          <TouchableHighlight
+            style={globalStyles.menuButtonLong}
+            activeOpacity={1}
+            underlayColor="rgb(50,0,0)"
+          >
+            <Text style={globalStyles.menuButtonLongText}>Google</Text>
+          </TouchableHighlight>
+          <TouchableHighlight
+            style={globalStyles.menuButtonLong}
+            activeOpacity={1}
+            underlayColor="rgb(50,0,0)"
+          >
+            <Text style={globalStyles.menuButtonLongText}>Facebook</Text>
+          </TouchableHighlight>
+          <TouchableHighlight
+            style={globalStyles.menuButtonLong}
+            activeOpacity={1}
+            underlayColor="rgb(50,0,0)"
+          >
             <Text
-              style={{
-                color: 'rgb(175,0,0)',
-                fontFamily: 'Tactical-Espionage-Action',
-              }}
+              style={globalStyles.menuButtonLongText}
+              onPress={() => setLoginOptionActive(false)}
             >
-              Cancel
+              Back
             </Text>
           </TouchableHighlight>
         </View>
       )}
 
-      <Text
-        style={{
-          backgroundColor: 'rgb(175,0,0)',
-          textAlign: 'center',
-          fontFamily: 'Tactical-Espionage-Action',
-        }}
-      >
-        OPTIONS
+      <Text style={globalStyles.menuHeaderText}>OPTIONS</Text>
+      <Text style={globalStyles.copyText}>MISSION BRIEFING</Text>
+      <View style={{ borderBottomWidth: 1, borderBottomColor: 'white' }}></View>
+      <Text style={globalStyles.copyText}>
+        Press the RESIST button repeatedly to regain your strength. When you've
+        had enough, press the SUBMIT button to submit your score. When your Life
+        reaches zero, the game is over and your score is reset. There are no
+        continues, my friend.
       </Text>
-      <Text style={{ color: 'white' }}>
+      <View
+        style={{
+          borderBottomColor: 'rgb(125,0,0)',
+          borderBottomWidth: 1,
+          margin: 16,
+        }}
+      ></View>
+      <Text style={globalStyles.copyText}>
         HIGH SCORE: {currentUser.highscore}
       </Text>
 
       <TouchableHighlight
         onPress={openResetHighscore}
-        style={{
-          backgroundColor: 'black',
-          borderWidth: 1,
-          borderColor: 'rgb(125,0,0)',
-          padding: 4,
-        }}
+        style={globalStyles.menuButtonLong}
+        activeOpacity={1}
+        underlayColor="rgb(50,0,0)"
       >
-        <Text style={{ color: 'rgb(175,0,0)' }}>RESET HIGH SCORE</Text>
+        <Text style={globalStyles.menuButtonLongText}>RESET HIGH SCORE</Text>
       </TouchableHighlight>
-      <Text style={{ color: 'white' }}>
-        Create an account to receive a Codename, access the Leaderboard, and
-        earn Achievements
+
+      <TouchableHighlight
+        onPress={openLoginOption}
+        style={globalStyles.menuButtonLong}
+        activeOpacity={1}
+        underlayColor="rgb(50,0,0)"
+      >
+        <Text style={globalStyles.menuButtonLongText}>LOG IN</Text>
+      </TouchableHighlight>
+      <Text style={globalStyles.copyText}>
+        Log in to receive a Codename, access the Leaderboard, and earn
+        Achievements
       </Text>
       <TouchableHighlight
         onPress={() => setGameView('mainMenu')}
-        style={{
-          backgroundColor: 'black',
-          borderWidth: 1,
-          borderColor: 'rgb(125,0,0)',
-          padding: 4,
-        }}
+        style={globalStyles.menuButtonLong}
+        activeOpacity={1}
+        underlayColor="rgb(50,0,0)"
       >
-        <Text style={{ color: 'rgb(175,0,0)' }}>BACK</Text>
+        <Text style={globalStyles.menuButtonLongText}>BACK</Text>
       </TouchableHighlight>
     </View>
   );
