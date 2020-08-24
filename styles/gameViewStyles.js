@@ -12,6 +12,7 @@ const gameViewStyles = StyleSheet.create({
     backgroundColor: 'black',
     padding: 8,
     justifyContent: 'space-between',
+    alignContent: 'center',
   },
   scoreDiv: {
     left: 0,

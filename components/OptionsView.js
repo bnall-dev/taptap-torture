@@ -23,13 +23,13 @@ const OptionsView = ({
             style={globalStyles.menuButtonLong}
             onPress={resetHighScore}
           >
-            <Text style={globalStyles.menuButtonLongText}>Confirm</Text>
+            <Text style={globalStyles.menuButtonLongText}>CONFIRM</Text>
           </TouchableHighlight>
           <TouchableHighlight
             style={globalStyles.menuButtonLong}
             onPress={() => setResetHighscoreActive(false)}
           >
-            <Text style={globalStyles.menuButtonLongText}>Cancel</Text>
+            <Text style={globalStyles.menuButtonLongText}>CANCEL</Text>
           </TouchableHighlight>
         </View>
       )}
@@ -42,14 +42,14 @@ const OptionsView = ({
             activeOpacity={1}
             underlayColor="rgb(50,0,0)"
           >
-            <Text style={globalStyles.menuButtonLongText}>Google</Text>
+            <Text style={globalStyles.menuButtonLongText}>GOOGLE</Text>
           </TouchableHighlight>
           <TouchableHighlight
             style={globalStyles.menuButtonLong}
             activeOpacity={1}
             underlayColor="rgb(50,0,0)"
           >
-            <Text style={globalStyles.menuButtonLongText}>Facebook</Text>
+            <Text style={globalStyles.menuButtonLongText}>FACEBOOK</Text>
           </TouchableHighlight>
           <TouchableHighlight
             style={globalStyles.menuButtonLong}
@@ -60,7 +60,7 @@ const OptionsView = ({
               style={globalStyles.menuButtonLongText}
               onPress={() => setLoginOptionActive(false)}
             >
-              Back
+              CANCEL
             </Text>
           </TouchableHighlight>
         </View>

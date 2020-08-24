@@ -3,10 +3,13 @@ import { StyleSheet } from 'react-native';
 const mainMenuViewStyles = StyleSheet.create({
   logoText: {
     textAlign: 'center',
-    color: 'rgb(175, 0,0)',
-    fontSize: 48,
+    color: 'white',
+    fontSize: 60,
     fontFamily: 'MetalGear',
-    margin: 8,
+    paddingRight: 10,
+    marginTop: 2,
+    height: 60,
+    opacity: 0.5,
   },
 
   // MAIN MENU BUTTONS STYLES

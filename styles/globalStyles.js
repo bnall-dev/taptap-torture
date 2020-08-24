@@ -7,6 +7,7 @@ const globalStyles = StyleSheet.create({
     top: 0,
     bottom: 0,
     flex: 1,
+    overflow: 'hidden',
   },
   viewWindow: {
     backgroundColor: 'black',
@@ -29,12 +30,14 @@ const globalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgb(125,0,0)',
     margin: 2,
+    backgroundColor: 'black',
   },
   menuButtonLongText: {
     color: 'rgb(175,0,0)',
-    fontFamily: 'Tactical-Espionage-Action',
-    fontSize: 16,
+    fontFamily: 'MGS2Menu',
+    fontSize: 12,
     textAlign: 'center',
+    letterSpacing: 1,
   },
   menuHeaderText: {
     backgroundColor: 'rgb(175,0,0)',

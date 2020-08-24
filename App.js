@@ -11,6 +11,7 @@ import {
   TouchableHighlight,
   AsyncStorage,
   TextInput,
+  Animated,
 } from 'react-native';
 import active from './assets/active.gif';
 import idle from './assets/idle.gif';
@@ -45,6 +46,7 @@ const customFonts = {
   Gameplay: require('./assets/fonts/Gameplay.ttf'),
   MetalGear: require('./assets/fonts/MetalGear.ttf'),
   'Tactical-Espionage-Action': require('./assets/fonts/Tactical-Espionage-Action.ttf'),
+  MGS2Menu: require('./assets/fonts/MGS2Menu.ttf'),
 };
 
 //SOUNDS
@@ -75,6 +77,9 @@ const loadGameoverSound = async () => {
   return sound;
 };
 loadGameoverSound();
+
+const addScoreOpacity = new Animated.Value(0);
+const addScorePosition = new Animated.Value(0);
 
 const App = () => {
   const [gameView, setGameView] = useState('mainMenu');
@@ -294,9 +299,45 @@ const App = () => {
       // An error occurred!
     }
   };
+  const [num, setNum] = useState(0);
 
   // INCREASE HEALTH ON KEYPRESS
+
   const resist = () => {
+    setNum((100 - health) * 10);
+
+    Animated.parallel([
+      Animated.sequence([
+        Animated.timing(addScorePosition, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+        Animated.timing(addScorePosition, {
+          toValue: -50,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(addScorePosition, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.sequence([
+        Animated.timing(addScoreOpacity, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(addScoreOpacity, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
     if (gameActive && health < 100) {
       setScore(score + (100 - health) * 10);
       setHealth(health + 1);
@@ -435,24 +476,21 @@ const App = () => {
     },
 
     logoTextDiv: {
-      backgroundColor: 'black',
-      borderBottomWidth: 10,
-      borderBottomColor: 'rgb(175, 0,0)',
-      borderTopWidth: 5,
-      borderTopColor: 'rgb(175, 0,0)',
       width: win.width,
       shadowColor: 'rgb(200,200,225)',
       shadowOffset: { width: 0, height: -40 },
       shadowOpacity: 0.3,
       shadowRadius: 30,
       marginBottom: 8,
+      paddingTop: 12,
     },
     menuLogo: {
-      height: win.width,
-      width: win.width,
-    },
-    mainMenuButtonsDiv: {
-      backgroundColor: 'black',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      opacity: 0.75,
+      position: 'absolute',
     },
   });
 
@@ -521,7 +559,7 @@ const App = () => {
                 activeOpacity={1}
                 underlayColor="rgb(50,0,0)"
               >
-                <Text style={globalStyles.menuButtonLongText}>Quit</Text>
+                <Text style={globalStyles.menuButtonLongText}>QUIT</Text>
               </TouchableHighlight>
               <TouchableHighlight
                 onPress={toggleGameMenu}
@@ -529,7 +567,7 @@ const App = () => {
                 activeOpacity={1}
                 underlayColor="rgb(50,0,0)"
               >
-                <Text style={globalStyles.menuButtonLongText}>Back</Text>
+                <Text style={globalStyles.menuButtonLongText}>BACK</Text>
               </TouchableHighlight>
             </View>
           )}
@@ -610,13 +648,17 @@ const App = () => {
             <TouchableHighlight
               style={[
                 globalStyles.menuButtonLong,
-                { margin: 0, paddingLeft: 16, paddingRight: 16 },
+                {
+                  justifyContent: 'center',
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                },
               ]}
               onPress={toggleGameMenu}
               activeOpacity={1}
               underlayColor="rgb(50,0,0)"
             >
-              <Text style={globalStyles.menuButtonLongText}>Menu</Text>
+              <Text style={globalStyles.menuButtonLongText}>MENU</Text>
             </TouchableHighlight>
           </View>
           <View style={gameViewStyles.barsDiv}>
@@ -654,9 +696,27 @@ const App = () => {
               <Text style={[globalStyles.copyText, { textAlign: 'left' }]}>
                 LEVEL {level}
               </Text>
+
               <Text style={[globalStyles.copyText, { textAlign: 'right' }]}>
                 SCORE: {score}
               </Text>
+              <Animated.Text
+                style={[
+                  globalStyles.copyText,
+                  {
+                    right: 0,
+                    textAlign: 'right',
+                    color: 'rgb(175,0,0)',
+                    opacity: addScoreOpacity,
+                    position: 'absolute',
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                    transform: [{ translateY: addScorePosition }],
+                  },
+                ]}
+              >
+                + {num}
+              </Animated.Text>
             </View>
             <Image source={viewImg} style={gameViewStyles.viewImg} />
           </View>
